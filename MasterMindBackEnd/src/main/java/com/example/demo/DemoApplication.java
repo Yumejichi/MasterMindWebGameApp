@@ -55,4 +55,10 @@ public class DemoApplication {
       return scores.toString();
    }
 
+   @ShellMethod("Loads scores by player: find-by-player <player>")
+   public String findByUserId(String userId) {
+      List<Scores> scores = this.scoreRepository.findByUserId(userId);
+      return scores.toString();
+   }
+
 }

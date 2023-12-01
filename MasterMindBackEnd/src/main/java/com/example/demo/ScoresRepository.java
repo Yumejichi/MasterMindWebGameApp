@@ -11,4 +11,9 @@ public interface ScoresRepository extends DatastoreRepository<Scores, Long> {
   List<Scores> findByScoreGreaterThan(int score);
 
   List<Scores> findByPlayerAndScore(String player, int score);
+
+  List<Scores> findByUserId(String userId);
+
+  // <List<Scores>> findHighScores();
+  // <List<Scores>> findTopScores();
 }

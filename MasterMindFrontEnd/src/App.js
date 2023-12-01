@@ -57,6 +57,20 @@ function App() {
     setHandleModal(false);
   };
 
+  // Function to call API to get all books in DB
+  function displayAllScores() {
+    axios
+      .get("https://bookstoreyume.wl.r.appspot.com/findAllScores")
+      .then((response) => {
+        setScores(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  }
+
   // this will be called by the LoginForm
   // this will be called by the LoginForm
   function HandleLogin(user) {
@@ -149,6 +163,12 @@ function App() {
     const itemArr = itemNumber.split("_", 2);
     const itemId = itemArr[1];
     const targetArr = targetId.split("_", 2);
+
+    // Check if the user is logged in and has set a handle
+    if (!user || !playerHandle) {
+      alert("Please log in or set your handle before making a guess.");
+      return;
+    }
 
     if (isButtonSelectable(targetArr[0], targetArr[1], itemId)) {
       const colElement = document.getElementById(
@@ -412,12 +432,18 @@ function App() {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  // function to call API to get all books in DB
-  function displayAllScores() {
+  // function to call API to get all scores in DB
+  function displayAllScores(pageNumber, pageSize, sortBy) {
     axios
-      .get("https://mastermindgamerecords.uc.r.appspot.com/findAllScores")
+      .get("https://mastermindgamerecords.uc.r.appspot.com/findAllScores", {
+        params: {
+          page: pageNumber,
+          size: pageSize,
+          sort: sortBy,
+        },
+      })
       .then((response) => {
-        setScores(response.data); // Assuming response.data contains the scores
+        setScores(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -425,6 +451,26 @@ function App() {
         setLoading(false);
       });
   }
+
+  // Function to fetch and display user's scores
+  const displayUserScores = () => {
+    // Call the API to fetch and display user's scores
+    // You can pass the user's information (e.g., user.uid) as a parameter
+    axios
+      .get("https://mastermindgamerecords.uc.r.appspot.com/findUserScores", {
+        params: {
+          userId: playerHandle,
+        },
+      })
+      .then((response) => {
+        setScores(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
 
   const handleRecordButtonClick = async () => {
     const postData = {
@@ -439,7 +485,7 @@ function App() {
         postData
       );
       console.log("Response:", response.data);
-      //displayAllScores();
+      displayUserScores();
     } catch (error) {
       console.error("Error posting data:", error);
     }
@@ -530,6 +576,10 @@ function App() {
                     </span>
                     <br />
                     <span>Your Score: {score}</span>
+                    {/* Add a button or link to trigger fetching and displaying user's scores */}
+                    <button onClick={() => displayUserScores()}>
+                      View My Scores
+                    </button>
                     {!recordedScore && (
                       <div>
                         <button onClick={handleRecordButtonClick}>

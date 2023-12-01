@@ -13,11 +13,14 @@ public class Scores {
   String player;
 
   int score;
+  String userId;
+
 
   public Scores(String title, String player, int score) {
     this.title = title;
     this.player = player;
     this.score = score;
+    this.userId = userId;
   }
 
   public long getId() {
@@ -35,6 +38,15 @@ public class Scores {
   public void setTitle(String title) {
     this.title = title;
   }
+
+  public String getUserId() {
+    return this.userId;
+  }
+
+  public void setUserId(String userId) {
+    this.userId = userId;
+  }
+
 
   public String getPlayer() {
     return this.player;
@@ -59,6 +71,7 @@ public class Scores {
         ", title:'" + this.title + '\'' +
         ", Player:'" + this.player + '\'' +
         ", score:" + this.score +
+        ", userId:'" + this.userId + '\'' +
         '}';
   }
 }
