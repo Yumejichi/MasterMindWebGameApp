@@ -39,6 +39,7 @@ function App() {
   const [error, setError] = useState(null);
 
   const [showAllScores, setShowAllScores] = useState(false);
+  const [showAllPlayersScores, setShowAllPlayersScores] = useState(false);
 
   // Function to handle player handle input
   const handlePlayerHandleChange = (event) => {
@@ -52,6 +53,16 @@ function App() {
 
     // Fetch and display all scores for the current userId
     displayUserScores(uid);
+  };
+
+  const handleShowAllPlayersScoresClick = () => {
+    // Toggle showAllScores state
+    setShowAllPlayersScores(
+      (prevShowAllPlayersScores) => !prevShowAllPlayersScores
+    );
+
+    // Fetch and display all scores for the current userId
+    displayAllPlayersScores();
   };
 
   // Add missing state setters for score and scores
@@ -477,6 +488,26 @@ function App() {
       });
   };
 
+  // Function to fetch and display all user's scores
+  const displayAllPlayersScores = () => {
+    // Call the API to sort and display all user's scores
+
+    axios
+      .get("https://mastermindgamerecords.uc.r.appspot.com/findAllScores", {})
+      .then((response) => {
+        // Sort the scores in descending order based on the 'score' property
+        const sortedScores = response.data.sort((a, b) => b.score - a.score);
+
+        // Update the state with the sorted scores
+        setScores(sortedScores);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  };
+
   const handleRecordButtonClick = async () => {
     const currentDate = new Date().toISOString(); // Adjust the format as needed
     const postData = {
@@ -559,11 +590,10 @@ function App() {
                 <button onClick={handleShowAllScoresClick}>
                   Show All Your Scores
                 </button>
-
                 {/* Display scores conditionally based on showAllScores */}
                 {showAllScores && (
                   <div>
-                    <h2>All Scores</h2>
+                    <h2>All Your Scores</h2>
                     {/* Render the scores however you want */}
                     {/* You can use a mapping function to display each score */}
                     <div className="score-list">
@@ -572,6 +602,30 @@ function App() {
                         <div className="score-item" key={score.id}>
                           <p>
                             Score: {score.score} (Date: {score.date})
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Button to show all players sorted scores */}
+                <button onClick={handleShowAllPlayersScoresClick}>
+                  Show All Players Scores
+                </button>
+                {/* Display scores conditionally based on showAllScores */}
+                {showAllPlayersScores && (
+                  <div>
+                    <h2>All Players Scores</h2>
+                    {/* Render the scores however you want */}
+                    {/* You can use a mapping function to display each score */}
+                    <div className="score-list">
+                      {console.log(scores)}
+                      {scores.map((score) => (
+                        <div className="score-item" key={score.id}>
+                          <p>
+                            Player: {score.player} Score: {score.score} (Date:{" "}
+                            {score.date})
                           </p>
                         </div>
                       ))}
