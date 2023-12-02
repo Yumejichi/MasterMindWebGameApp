@@ -41,6 +41,27 @@ function App() {
   const [showAllScores, setShowAllScores] = useState(false);
   const [showAllPlayersScores, setShowAllPlayersScores] = useState(false);
 
+  // State for user scores pagination
+  const [currentUserPage, setCurrentUserPage] = useState(1);
+  const userScoresPerPage = 3;
+
+  // Add missing state setters for score and scores
+  const [score, setScore] = useState(10);
+  const [userScores, setUserScores] = useState([]);
+  const [allPlayersScores, setAllPlayersScores] = useState([]);
+  const [recordedScore, setRecordedScore] = useState(false);
+  const [handleModal, setHandleModal] = useState(false);
+  const [handleInput, setHandleInput] = useState(""); // New state for handle input
+  const [uid, setUid] = useState(null);
+
+  // Function to calculate current user scores for the page
+  const indexOfLastUserScore = currentUserPage * userScoresPerPage;
+  const indexOfFirstUserScore = indexOfLastUserScore - userScoresPerPage;
+  const currentUserScores = userScores.slice(
+    indexOfFirstUserScore,
+    indexOfLastUserScore
+  );
+
   // Function to handle player handle input
   const handlePlayerHandleChange = (event) => {
     setPlayerHandle(event.target.value);
@@ -64,14 +85,6 @@ function App() {
     // Fetch and display all scores for the current userId
     displayAllPlayersScores();
   };
-
-  // Add missing state setters for score and scores
-  const [score, setScore] = useState(10);
-  const [scores, setScores] = useState([]);
-  const [recordedScore, setRecordedScore] = useState(false);
-  const [handleModal, setHandleModal] = useState(false);
-  const [handleInput, setHandleInput] = useState(""); // New state for handle input
-  const [uid, setUid] = useState(null);
 
   const handleSetHandle = () => {
     // Set the handle and close the modal
@@ -479,7 +492,7 @@ function App() {
         },
       })
       .then((response) => {
-        setScores(response.data);
+        setUserScores(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -499,7 +512,7 @@ function App() {
         const sortedScores = response.data.sort((a, b) => b.score - a.score);
 
         // Update the state with the sorted scores
-        setScores(sortedScores);
+        setAllPlayersScores(sortedScores);
         setLoading(false);
       })
       .catch((error) => {
@@ -528,6 +541,28 @@ function App() {
     } catch (error) {
       console.error("Error posting data:", error);
     }
+  };
+
+  const renderPageNumbers = (
+    totalItems,
+    itemsPerPage,
+    currentPage,
+    setCurrentPage
+  ) => {
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(totalItems / itemsPerPage); i++) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers.map((number) => (
+      <button
+        key={number}
+        onClick={() => setCurrentPage(number)}
+        className={currentPage === number ? "active" : ""}
+      >
+        {number}
+      </button>
+    ));
   };
 
   return (
@@ -597,14 +632,22 @@ function App() {
                     {/* Render the scores however you want */}
                     {/* You can use a mapping function to display each score */}
                     <div className="score-list">
-                      {console.log(scores)}
-                      {scores.map((score) => (
+                      {console.log(userScores)}
+                      {currentUserScores.map((score) => (
                         <div className="score-item" key={score.id}>
                           <p>
                             Score: {score.score} (Date: {score.date})
                           </p>
                         </div>
                       ))}
+                    </div>
+                    <div className="pagination">
+                      {renderPageNumbers(
+                        userScores.length,
+                        userScoresPerPage,
+                        currentUserPage,
+                        setCurrentUserPage
+                      )}
                     </div>
                   </div>
                 )}
@@ -620,8 +663,8 @@ function App() {
                     {/* Render the scores however you want */}
                     {/* You can use a mapping function to display each score */}
                     <div className="score-list">
-                      {console.log(scores)}
-                      {scores.map((score) => (
+                      {console.log(allPlayersScores)}
+                      {allPlayersScores.map((score) => (
                         <div className="score-item" key={score.id}>
                           <p>
                             Player: {score.player} Score: {score.score} (Date:{" "}
