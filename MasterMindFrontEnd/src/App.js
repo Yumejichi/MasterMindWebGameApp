@@ -38,10 +38,20 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [showAllScores, setShowAllScores] = useState(false);
+
   // Function to handle player handle input
   const handlePlayerHandleChange = (event) => {
     setPlayerHandle(event.target.value);
     console.log("Player Handle:", event.target.value);
+  };
+
+  const handleShowAllScoresClick = () => {
+    // Toggle showAllScores state
+    setShowAllScores((prevShowAllScores) => !prevShowAllScores);
+
+    // Fetch and display all scores for the current userId
+    displayUserScores(uid);
   };
 
   // Add missing state setters for score and scores
@@ -50,37 +60,30 @@ function App() {
   const [recordedScore, setRecordedScore] = useState(false);
   const [handleModal, setHandleModal] = useState(false);
   const [handleInput, setHandleInput] = useState(""); // New state for handle input
+  const [uid, setUid] = useState(null);
 
   const handleSetHandle = () => {
     // Set the handle and close the modal
     setPlayerHandle(handleInput);
     setHandleModal(false);
-  };
 
-  // Function to call API to get all books in DB
-  function displayAllScores() {
-    axios
-      .get("https://bookstoreyume.wl.r.appspot.com/findAllScores")
-      .then((response) => {
-        setScores(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError(error.message);
-        setLoading(false);
-      });
-  }
+    // Call the function to display the user's scores
+    displayUserScores(uid);
+  };
 
   // this will be called by the LoginForm
   // this will be called by the LoginForm
   function HandleLogin(user) {
     console.log("User logged in:", user);
     // Update the user and playerHandle when the login information is available
-    setUser({
+    setUser((prevUser) => ({
       uid: user.uid,
       displayName: user.displayName,
       email: user.email,
-    });
+    }));
+
+    setUid(user.uid); // Set uid
+    console.log("After setting the uid:", uid);
   }
 
   // judge if the button is selected before
@@ -432,34 +435,36 @@ function App() {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  // function to call API to get all scores in DB
-  function displayAllScores(pageNumber, pageSize, sortBy) {
-    axios
-      .get("https://mastermindgamerecords.uc.r.appspot.com/findAllScores", {
-        params: {
-          page: pageNumber,
-          size: pageSize,
-          sort: sortBy,
-        },
-      })
-      .then((response) => {
-        setScores(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError(error.message);
-        setLoading(false);
-      });
-  }
+  // // function to call API to get all scores in DB
+  // function displayAllScores() {
+  //   axios
+  //     .get("https://mastermindgamerecords.uc.r.appspot.com/findAllScores", {
+  //       params: {
+  //         page: pageNumber,
+  //         size: pageSize,
+  //         sort: sortBy,
+  //       },
+  //     })
+  //     .then((response) => {
+  //       setScores(response.data);
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message);
+  //       setLoading(false);
+  //     });
+  // }
 
   // Function to fetch and display user's scores
-  const displayUserScores = () => {
+  const displayUserScores = (uid) => {
     // Call the API to fetch and display user's scores
     // You can pass the user's information (e.g., user.uid) as a parameter
+
+    console.log("Displaying user scores for uid:", uid);
     axios
-      .get("https://mastermindgamerecords.uc.r.appspot.com/findUserScores", {
+      .get("https://mastermindgamerecords.uc.r.appspot.com/findByUserId", {
         params: {
-          userId: playerHandle,
+          userId: uid,
         },
       })
       .then((response) => {
@@ -473,11 +478,14 @@ function App() {
   };
 
   const handleRecordButtonClick = async () => {
+    const currentDate = new Date().toISOString(); // Adjust the format as needed
     const postData = {
       //title,
       user: user, // Assuming you have the user information available
       player: playerHandle,
       score: score,
+      userId: uid,
+      date: currentDate,
     };
     try {
       const response = await axios.post(
@@ -547,6 +555,30 @@ function App() {
               <div className="frame">{createFrame()}</div>
               <div className="spaceCol"></div>
               <div className="score">
+                {/* Button to show all scores */}
+                <button onClick={handleShowAllScoresClick}>
+                  Show All Your Scores
+                </button>
+
+                {/* Display scores conditionally based on showAllScores */}
+                {showAllScores && (
+                  <div>
+                    <h2>All Scores</h2>
+                    {/* Render the scores however you want */}
+                    {/* You can use a mapping function to display each score */}
+                    <div className="score-list">
+                      {console.log(scores)}
+                      {scores.map((score) => (
+                        <div className="score-item" key={score.id}>
+                          <p>
+                            Score: {score.score} (Date: {score.date})
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {winning && (
                   <div>
                     <span style={{ fontSize: "18px" }}>

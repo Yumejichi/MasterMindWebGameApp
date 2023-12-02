@@ -3,6 +3,9 @@ package com.example.demo;
 import java.util.List;
 
 import com.google.cloud.spring.data.datastore.repository.DatastoreRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 public interface ScoresRepository extends DatastoreRepository<Scores, Long> {
 
@@ -13,7 +16,5 @@ public interface ScoresRepository extends DatastoreRepository<Scores, Long> {
   List<Scores> findByPlayerAndScore(String player, int score);
 
   List<Scores> findByUserId(String userId);
-
-  // <List<Scores>> findHighScores();
-  // <List<Scores>> findTopScores();
+  
 }

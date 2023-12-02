@@ -47,33 +47,6 @@ public class ScoresController {
     return scoreList;
   }
 
-  // @GetMapping("/findAllScores")
-  // @ResponseBody
-  // @CrossOrigin(origins = "*")
-  // public ResponseEntity<List<Scores>> findAllScores(
-  //         @RequestParam(defaultValue = "0") int page,
-  //         @RequestParam(defaultValue = "20") int size,
-  //         @RequestParam(defaultValue = "id,desc") String sortBy
-  // ) {
-  //     // Use Spring Data JPA to fetch scores with pagination and sorting
-  //     Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy.split(",")));
-  //     Page<Scores> scorePage = scoreRepository.findAll(pageable);
-  //     List<Scores> scores = scorePage.getContent();
-
-  //     return new ResponseEntity<>(scores, HttpStatus.OK);
-  // }
-
-
-  // @GetMapping("/findHighScores")
-  // @ResponseBody
-  // @CrossOrigin(origins = "*")
-  // public ResponseEntity<List<Scores>> findHighScores() {
-  //     // Use Spring Data JPA to fetch high scores
-  //     List<Scores> highScores = scoreRepository.findTopScores();
-
-  //     return new ResponseEntity<>(highScores, HttpStatus.OK);
-  // }
-
 
   @GetMapping("/findByPlayer")
   @ResponseBody
