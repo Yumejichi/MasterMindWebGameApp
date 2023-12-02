@@ -43,7 +43,9 @@ function App() {
 
   // State for user scores pagination
   const [currentUserPage, setCurrentUserPage] = useState(1);
-  const userScoresPerPage = 3;
+  const userScoresPerPage = 2;
+  const [currentPageAllPlayers, setCurrentPageAllPlayers] = useState(1);
+  const allPlayersScoresPerPage = 2;
 
   // Add missing state setters for score and scores
   const [score, setScore] = useState(10);
@@ -60,6 +62,15 @@ function App() {
   const currentUserScores = userScores.slice(
     indexOfFirstUserScore,
     indexOfLastUserScore
+  );
+  // Function to calculate current all players scores for the page
+  const indexOfLastAllPlayersScore =
+    currentPageAllPlayers * allPlayersScoresPerPage;
+  const indexOfFirstAllPlayersScore =
+    indexOfLastAllPlayersScore - allPlayersScoresPerPage;
+  const currentAllPlayersScores = allPlayersScores.slice(
+    indexOfFirstAllPlayersScore,
+    indexOfLastAllPlayersScore
   );
 
   // Function to handle player handle input
@@ -565,6 +576,28 @@ function App() {
     ));
   };
 
+  // Function to render pagination for all players scores
+  const renderAllPlayersPageNumbers = () => {
+    const pageNumbers = [];
+    for (
+      let i = 1;
+      i <= Math.ceil(allPlayersScores.length / allPlayersScoresPerPage);
+      i++
+    ) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers.map((number) => (
+      <button
+        key={number}
+        onClick={() => setCurrentPageAllPlayers(number)}
+        className={currentPageAllPlayers === number ? "active" : ""}
+      >
+        {number}
+      </button>
+    ));
+  };
+
   return (
     <div>
       {user ? ( // Check if a user is authenticated
@@ -664,7 +697,7 @@ function App() {
                     {/* You can use a mapping function to display each score */}
                     <div className="score-list">
                       {console.log(allPlayersScores)}
-                      {allPlayersScores.map((score) => (
+                      {currentAllPlayersScores.map((score) => (
                         <div className="score-item" key={score.id}>
                           <p>
                             Player: {score.player} Score: {score.score} (Date:{" "}
@@ -672,6 +705,9 @@ function App() {
                           </p>
                         </div>
                       ))}
+                    </div>
+                    <div className="pagination">
+                      {renderAllPlayersPageNumbers()}
                     </div>
                   </div>
                 )}
