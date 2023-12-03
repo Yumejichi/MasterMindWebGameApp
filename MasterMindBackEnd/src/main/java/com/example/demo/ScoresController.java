@@ -67,4 +67,17 @@ public class ScoresController {
     scores.forEach(scoreList::add);
     return scoreList;
   }
+
+  @DeleteMapping("/deleteByUserId")
+@ResponseBody
+@CrossOrigin(origins = "*")
+public ResponseEntity<String> deleteByUserId(@RequestParam String userId) {
+    try {
+        scoreRepository.deleteByUserId(userId);
+        return ResponseEntity.ok("Scores deleted successfully for user ID: " + userId);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body("Error deleting scores for user ID: " + userId);
+    }
+}
 }

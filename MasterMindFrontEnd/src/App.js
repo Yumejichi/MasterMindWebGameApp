@@ -1,18 +1,13 @@
 import "./App.css";
 import LoginForm from "./LoginForm";
 import axios from "axios";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import item_1 from "./images/item_1.png";
 import item_2 from "./images/item_2.png";
 import item_3 from "./images/item_3.png";
 import item_4 from "./images/item_4.png";
 import item_5 from "./images/item_5.png";
 import item_6 from "./images/item_6.png";
-
-// RecordScoreEffect component definition (assuming it's a functional component)
-const RecordScoreEffect = (props) => {
-  // ... (implementation of RecordScoreEffect)
-};
 
 const toGuess = 4;
 const maxCols = 5;
@@ -29,14 +24,15 @@ function App() {
 
   // To initialize the state and manage the selected buttons for each row:
   const selectedButtons = useRef(Array(maxRows).fill([]));
-  // Add the handle state here
-  const [handle, setHandle] = useState(""); // New state for handle
 
   // user is the currently logged in user
   const [user, setUser] = useState(null); // Add a state variable for the player's handle
   const [playerHandle, setPlayerHandle] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Add this to your existing state declarations
+  const [deleteStatus, setDeleteStatus] = useState(null);
 
   const [showAllScores, setShowAllScores] = useState(false);
   const [showAllPlayersScores, setShowAllPlayersScores] = useState(false);
@@ -51,7 +47,9 @@ function App() {
   const [score, setScore] = useState(10);
   const [userScores, setUserScores] = useState([]);
   const [allPlayersScores, setAllPlayersScores] = useState([]);
+  const [skiprecordScore, setSkipRecordScore] = useState(false);
   const [recordedScore, setRecordedScore] = useState(false);
+
   const [handleModal, setHandleModal] = useState(false);
   const [handleInput, setHandleInput] = useState(""); // New state for handle input
   const [uid, setUid] = useState(null);
@@ -73,11 +71,11 @@ function App() {
     indexOfLastAllPlayersScore
   );
 
-  // Function to handle player handle input
-  const handlePlayerHandleChange = (event) => {
-    setPlayerHandle(event.target.value);
-    console.log("Player Handle:", event.target.value);
-  };
+  // // Function to handle player handle input
+  // const handlePlayerHandleChange = (event) => {
+  //   setPlayerHandle(event.target.value);
+  //   console.log("Player Handle:", event.target.value);
+  // };
 
   const handleShowAllScoresClick = () => {
     // Toggle showAllScores state
@@ -107,11 +105,10 @@ function App() {
   };
 
   // this will be called by the LoginForm
-  // this will be called by the LoginForm
   function HandleLogin(user) {
     console.log("User logged in:", user);
     // Update the user and playerHandle when the login information is available
-    setUser((prevUser) => ({
+    setUser(() => ({
       uid: user.uid,
       displayName: user.displayName,
       email: user.email,
@@ -159,9 +156,6 @@ function App() {
         parseInt(guessItem),
         1
       );
-      {
-        /**if both position and color are correct */
-      }
       if (indexOfGuessItem !== -1 && indexOfGuessItem === index) {
         guessResults.current[round].exact += 1;
       } else {
@@ -188,7 +182,7 @@ function App() {
       }
     }
 
-    if (score == 0) {
+    if (score === 0) {
       alert("Game Over! You couldn't guess the combination in 10 rounds.");
     }
   };
@@ -254,7 +248,7 @@ function App() {
 
   const createCheckCol = (row) => {
     return (
-      <div id={"${row}_${maxCols + 1}"} className="col">
+      <div id={`${row}_${maxCols + 1}`} className="col">
         <img
           className="finger"
           src="/images/finger.png"
@@ -548,9 +542,24 @@ function App() {
         postData
       );
       console.log("Response:", response.data);
-      displayUserScores();
+      displayUserScores(uid);
+
+      // Set the recordedScore state to true
+      setRecordedScore(true);
     } catch (error) {
       console.error("Error posting data:", error);
+
+      // Additional error handling if needed
+      if (error.response) {
+        console.error(
+          "Server responded with non-success status",
+          error.response.status
+        );
+      } else if (error.request) {
+        console.error("No response received from the server");
+      } else {
+        console.error("Error setting up the request", error.message);
+      }
     }
   };
 
@@ -598,26 +607,143 @@ function App() {
     ));
   };
 
+  // Function to handle deleting scores
+  const handleDeleteScores = (uid) => {
+    // Check if the user is logged in
+    if (!user) {
+      alert("Please log in to delete scores.");
+      return;
+    }
+
+    // Set loading status
+    setLoading(true);
+
+    // Call the API to delete scores for the current user
+    axios
+      .delete("https://mastermindgamerecords.uc.r.appspot.com/deleteByUserId", {
+        params: {
+          userId: uid,
+        },
+      })
+      .then((response) => {
+        // Update delete status
+        setDeleteStatus("success");
+
+        // You may want to refresh or update other UI elements as needed
+        // For example, you can fetch the updated scores after deletion
+
+        // Fetch and display user's scores after deletion
+        displayUserScores(uid);
+      })
+      .catch((error) => {
+        // Update delete status
+        setDeleteStatus("error");
+        console.error("Error deleting scores:", error);
+      })
+      .finally(() => {
+        // Reset loading status
+        setLoading(false);
+      });
+  };
+
   return (
     <div>
       {user ? ( // Check if a user is authenticated
         <div className="App">
           <header className="App-header">
             <div className="background">
-              {user && !playerHandle && (
-                <div className="modal">
-                  <p>Please set your handle:</p>
-                  <input
-                    type="text"
-                    value={handleInput}
-                    onChange={(e) => setHandleInput(e.target.value)}
-                  />
-                  <button onClick={handleSetHandle}>Set Handle</button>
-                </div>
-              )}
+              {/* Left side column */}
+              <div className="left-column">
+                {/* Logout button */}
+                <LoginForm LoginEvent={HandleLogin} />
 
-              {/* Include the LoginForm component */}
-              <LoginForm LoginEvent={HandleLogin} />
+                {user && !playerHandle ? (
+                  <div className="modal">
+                    <p>Please set your handle:</p>
+                    <input
+                      type="text"
+                      value={handleInput}
+                      onChange={(e) => setHandleInput(e.target.value)}
+                    />
+                    <button onClick={handleSetHandle}>Set Handle</button>
+                  </div>
+                ) : (
+                  <div className="modal">
+                    <p>Change your handle:</p>
+                    <input
+                      type="text"
+                      value={handleInput}
+                      onChange={(e) => setHandleInput(e.target.value)}
+                    />
+                    <button onClick={handleSetHandle}>Change Handle</button>
+                  </div>
+                )}
+
+                {/* Button to show all scores */}
+                <button onClick={handleShowAllScoresClick}>
+                  Show All Your Scores
+                </button>
+                {/* Display scores conditionally based on showAllScores */}
+                {showAllScores && (
+                  <div>
+                    <h2>All Your Scores</h2>
+                    {/* Render the scores however you want */}
+                    {/* You can use a mapping function to display each score */}
+                    <div className="score-list">
+                      {console.log(userScores)}
+                      {currentUserScores.map((score) => (
+                        <div className="score-item" key={score.id}>
+                          <p>
+                            Score: {score.score} (Date: {score.date})
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pagination">
+                      {renderPageNumbers(
+                        userScores.length,
+                        userScoresPerPage,
+                        currentUserPage,
+                        setCurrentUserPage
+                      )}
+                    </div>
+                    {/* Add the delete button */}
+                    {user && (
+                      <button onClick={() => handleDeleteScores()}>
+                        Delete My Scores
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Button to show all players sorted scores */}
+                <button onClick={handleShowAllPlayersScoresClick}>
+                  Show All Players Scores
+                </button>
+                {/* Display scores conditionally based on showAllScores */}
+                {showAllPlayersScores && (
+                  <div>
+                    <h2>All Players Scores</h2>
+                    {/* Render the scores however you want */}
+                    {/* You can use a mapping function to display each score */}
+                    <div className="score-list">
+                      {console.log(allPlayersScores)}
+                      {currentAllPlayersScores.map((score) => (
+                        <div className="score-item" key={score.id}>
+                          <p>
+                            Player: {score.player} Score: {score.score} (Date:{" "}
+                            {score.date})
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pagination">
+                      {renderAllPlayersPageNumbers()}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="left">
                 <div className="headline">
                   Mastermind Game {playerHandle && `- Player: ${playerHandle}`}
@@ -654,64 +780,6 @@ function App() {
               <div className="frame">{createFrame()}</div>
               <div className="spaceCol"></div>
               <div className="score">
-                {/* Button to show all scores */}
-                <button onClick={handleShowAllScoresClick}>
-                  Show All Your Scores
-                </button>
-                {/* Display scores conditionally based on showAllScores */}
-                {showAllScores && (
-                  <div>
-                    <h2>All Your Scores</h2>
-                    {/* Render the scores however you want */}
-                    {/* You can use a mapping function to display each score */}
-                    <div className="score-list">
-                      {console.log(userScores)}
-                      {currentUserScores.map((score) => (
-                        <div className="score-item" key={score.id}>
-                          <p>
-                            Score: {score.score} (Date: {score.date})
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="pagination">
-                      {renderPageNumbers(
-                        userScores.length,
-                        userScoresPerPage,
-                        currentUserPage,
-                        setCurrentUserPage
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Button to show all players sorted scores */}
-                <button onClick={handleShowAllPlayersScoresClick}>
-                  Show All Players Scores
-                </button>
-                {/* Display scores conditionally based on showAllScores */}
-                {showAllPlayersScores && (
-                  <div>
-                    <h2>All Players Scores</h2>
-                    {/* Render the scores however you want */}
-                    {/* You can use a mapping function to display each score */}
-                    <div className="score-list">
-                      {console.log(allPlayersScores)}
-                      {currentAllPlayersScores.map((score) => (
-                        <div className="score-item" key={score.id}>
-                          <p>
-                            Player: {score.player} Score: {score.score} (Date:{" "}
-                            {score.date})
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="pagination">
-                      {renderAllPlayersPageNumbers()}
-                    </div>
-                  </div>
-                )}
-
                 {winning && (
                   <div>
                     <span style={{ fontSize: "18px" }}>
@@ -727,13 +795,22 @@ function App() {
                         <button onClick={handleRecordButtonClick}>
                           Record Score
                         </button>
-                        <button onClick={() => setRecordedScore(true)}>
+                        <button onClick={() => setSkipRecordScore(true)}>
                           Skip Recording
                         </button>
                       </div>
                     )}
                   </div>
                 )}
+
+                {recordedScore && (
+                  <div>
+                    <span style={{ fontSize: "18px" }}>
+                      Score Recorded Successfully!
+                    </span>
+                  </div>
+                )}
+
                 {!winning && round === maxRows && (
                   <div>
                     <span style={{ fontSize: "18px" }}>

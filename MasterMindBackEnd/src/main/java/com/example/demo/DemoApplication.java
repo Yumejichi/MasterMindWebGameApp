@@ -3,7 +3,7 @@ package com.example.demo;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import java.time.LocalDate;
+import java.time.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -22,7 +22,7 @@ public class DemoApplication {
    }
 
    @ShellMethod("Saves a score to Cloud Datastore: save-score <title> <player> <score>")
-   public String saveScore(String user, String player, int score, String userId, LocalDate date) {
+   public String saveScore(String user, String player, int score, String userId, Date date) {
       Scores savedScore = this.scoreRepository.save(new Scores(user, player, score, userId, date));
       return savedScore.toString();
    }
@@ -39,9 +39,9 @@ public class DemoApplication {
       return scores.toString();
    }
 
-   @ShellMethod("Removes all scores")
-   public void removeAllScores() {
-      this.scoreRepository.deleteAll();
+   @ShellMethod("Removes all scores for the userId")
+   public void deleteByUserId(String userId) {
+      this.scoreRepository.deleteByUserId(userId);
    }
 
    @ShellMethod("Loads scores by Player and score: find-by-Player-score <player> <score>")

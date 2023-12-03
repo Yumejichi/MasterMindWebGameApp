@@ -16,5 +16,7 @@ public interface ScoresRepository extends DatastoreRepository<Scores, Long> {
   List<Scores> findByPlayerAndScore(String player, int score);
 
   List<Scores> findByUserId(String userId);
-  
+
+  void deleteByUserId(String userId);
+
 }
