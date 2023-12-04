@@ -20,7 +20,9 @@ public class Scores {
 
   LocalDate date;
 
-
+/**
+ * constructor
+ */
   public Scores(String title, String player, int score, String userId, LocalDate date) {
     this.title = title;
     this.player = player;
@@ -41,45 +43,75 @@ public class Scores {
     return this.title;
   }
 
+
   public void setTitle(String title) {
     this.title = title;
   }
 
+
+  /**
+   * get userId method
+   */
   public String getUserId() {
     return this.userId;
   }
 
+
+
+  /**
+   * set userId method
+   */
   public void setUserId(String userId) {
     this.userId = userId;
   }
 
 
 
-
+  /**
+   * get player method
+   */
   public String getPlayer() {
     return this.player;
   }
 
+  /**
+   * set player method
+   */
   public void setPlayer(String player) {
     this.player = player;
   }
 
+  /**
+   * get score method
+   */
   public int getscore() {
     return this.score;
   }
 
+  /**
+   * set score method
+   */
   public void setscore(int score) {
     this.score = score;
   }
 
+  /**
+   * get Date method
+   */
   public LocalDate getDate() {
     return this.date;
   }
 
+  /**
+   * setDate method
+   */
   public void setDate(LocalDate date) {
     this.date = date;
   }
 
+  /**
+   * override toString method
+   */
   @Override
   public String toString() {
     return "{" +
