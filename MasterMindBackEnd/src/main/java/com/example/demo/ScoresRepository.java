@@ -19,4 +19,6 @@ public interface ScoresRepository extends DatastoreRepository<Scores, Long> {
 
   void deleteByUserId(String userId);
 
+  void changePlayerHandle(String userId, String newPlayer);
+
 }

@@ -2,6 +2,7 @@ package com.example.demo;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.common.collect.Lists;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 public class ScoresController {
@@ -69,15 +71,38 @@ public class ScoresController {
   }
 
   @DeleteMapping("/deleteByUserId")
-@ResponseBody
-@CrossOrigin(origins = "*")
-public ResponseEntity<String> deleteByUserId(@RequestParam String userId) {
-    try {
-        scoreRepository.deleteByUserId(userId);
-        return ResponseEntity.ok("Scores deleted successfully for user ID: " + userId);
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Error deleting scores for user ID: " + userId);
-    }
-}
+  @ResponseBody
+  @CrossOrigin(origins = "*")
+  public ResponseEntity<String> deleteByUserId(@RequestParam String userId) {
+      try {
+          scoreRepository.deleteByUserId(userId);
+          return ResponseEntity.ok("Scores deleted successfully for user ID: " + userId);
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("Error deleting scores for user ID: " + userId);
+      }
+  }
+
+
+
+  @PutMapping("/changePlayerHandle")
+  @ResponseBody
+  @CrossOrigin(origins = "*")
+  public ResponseEntity<String> changePlayerHandle(
+          @RequestParam String userId,
+          @RequestParam String newPlayer) {
+      try {
+          List<Scores> scores = scoreRepository.findByUserId(userId);
+          for (Scores score : scores) {
+              score.setPlayer(newPlayer);
+              scoreRepository.save(score);
+          }
+          return ResponseEntity.ok("Player handle changed successfully for user ID: " + userId);
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("Error changing player handle for user ID: " + userId);
+      }
+  }
+
+
 }

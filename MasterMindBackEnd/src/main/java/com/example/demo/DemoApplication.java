@@ -2,8 +2,11 @@ package com.example.demo;
 
 import java.util.List;
 
+// import com.google.common.collect.Lists;
+// import java.time.Date;
+// import java.util.Date;
+import java.time.LocalDate;
 import com.google.common.collect.Lists;
-import java.time.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -22,7 +25,7 @@ public class DemoApplication {
    }
 
    @ShellMethod("Saves a score to Cloud Datastore: save-score <title> <player> <score>")
-   public String saveScore(String user, String player, int score, String userId, Date date) {
+   public String saveScore(String user, String player, int score, String userId, LocalDate date) {
       Scores savedScore = this.scoreRepository.save(new Scores(user, player, score, userId, date));
       return savedScore.toString();
    }
@@ -54,12 +57,23 @@ public class DemoApplication {
    public String findByScoreAfter(int score) {
       List<Scores> scores = this.scoreRepository.findByScoreGreaterThan(score);
       return scores.toString();
-   }
+   // }
 
    @ShellMethod("Loads scores by player: find-by-player <player>")
    public String findByUserId(String userId) {
       List<Scores> scores = this.scoreRepository.findByUserId(userId);
       return scores.toString();
+   }
+
+
+
+   @ShellMethod("Change player handle for a given userId: change-handle <userId> <newHandle>")
+   public void changePlayerHandle(String userId, String newPlayer){
+       List<Scores> scores = this.scoreRepository.findByUserId(userId);
+       for (Scores score : scores) {
+           score.setPlayer(newPlayer);
+           scoreRepository.save(score);
+       }
    }
 
 

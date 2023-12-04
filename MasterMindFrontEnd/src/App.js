@@ -100,8 +100,22 @@ function App() {
     setPlayerHandle(handleInput);
     setHandleModal(false);
 
-    // Call the function to display the user's scores
-    displayUserScores(uid);
+    //call API to change the handle
+    axios
+      .put(
+        `https://mastermindgamerecords.uc.r.appspot.com/changePlayerHandle?userId=${uid}&newPlayer=${handleInput}`
+      )
+      .then((response) => {
+        // Update delete status
+        setDeleteStatus("success");
+        // Fetch and display all user's scores after change(since the name changes)
+        displayAllPlayersScores();
+      })
+      .catch((error) => {
+        // Handle errors
+        console.error("Error changing handle:", error);
+        setDeleteStatus("error");
+      });
   };
 
   // this will be called by the LoginForm
@@ -196,27 +210,33 @@ function App() {
     const itemId = itemArr[1];
     const targetArr = targetId.split("_", 2);
 
-    // Check if the user is logged in and has set a handle
-    if (!user || !playerHandle) {
-      alert("Please log in or set your handle before making a guess.");
-      return;
-    }
+    // Check if targetArr has the expected values
+    if (targetArr.length === 2 && targetArr[0] && targetArr[1]) {
+      // Check if the user is logged in and has set a handle
+      if (!user || !playerHandle) {
+        alert("Please log in or set your handle before making a guess.");
+        return;
+      }
 
-    if (isButtonSelectable(targetArr[0], targetArr[1], itemId)) {
-      const colElement = document.getElementById(
-        targetArr[0] + "_" + targetArr[1]
-      );
+      if (isButtonSelectable(targetArr[0], targetArr[1], itemId)) {
+        const colElement = document.getElementById(
+          targetArr[0] + "_" + targetArr[1]
+        );
 
-      // Set the dropped item's image
-      colElement.src = items[itemId];
+        // Set the dropped item's image
+        colElement.src = items[itemId];
 
-      currentRow[targetArr[1]] = itemArr[1];
+        currentRow[targetArr[1]] = itemArr[1];
 
-      // update the selected status of button
-      selectedButtons.current[targetArr[0]].push(itemId);
+        // update the selected status of button
+        selectedButtons.current[targetArr[0]].push(itemId);
+      } else {
+        // show the error message
+        alert("This color is already chosen, choose another one.");
+      }
     } else {
-      // show the error message
-      alert("This color is already chosen, choose another one.");
+      // Handle the case where targetArr does not have the expected values
+      console.error("Invalid targetArr:", targetArr);
     }
   };
 
